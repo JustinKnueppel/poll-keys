@@ -27,16 +27,19 @@ func main () {
 	log.Printf("Polling for changes to %s\n", target)
 	err := DownloadFile(tempFile, target)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to download %s\n", target)
 	}
-	log.Println("Successfully downloaded file")
-	contents, err := ioutil.ReadFile(tempFile)
+	log.Printf("Successfully downloaded %s\n", target)
+	
+	checksum, err := getMD5(tempFile)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to get checksum of %s\n", tempFile)
 	}
-	checksum := md5.Sum(contents)
-	currentChecksum := currentMD5()
-	if bytes.Compare(checksum[:], currentChecksum[:]) == 0 {
+	keysChecksum, err := getMD5(keysFile)
+	if err != nil {
+		log.Fatalf("Failed to get checksum of %s\n", keysFile)
+	}
+	if bytes.Compare(checksum[:], keysChecksum[:]) == 0 {
 		log.Println("Checksums match, no changes necessary")
 	} else {
 		log.Printf("Changes detected, overriding %s\n", keysFile)
@@ -77,10 +80,10 @@ func DownloadFile(filepath string, url string) error {
 	return err
 }
 
-func currentMD5() [16]byte {
-	contents, err := ioutil.ReadFile(keysFile)
+func getMD5(path string) ([16]byte, error) {
+	contents, err := ioutil.ReadFile(path)
 	if err != nil {
-		panic(err)
+		return [16]byte{}, err
 	}
-	return md5.Sum(contents)
+	return md5.Sum(contents), nil
 }
