@@ -14,12 +14,12 @@ import (
 var (
 	tempFile string
 	target string
-	outFile string
+	keysFile string
 )
 
 func main () {
 	flag.StringVar(&target, "target", "", "Target file to keep track of")
-	flag.StringVar(&outFile, "out", "~/.ssh/authorized_keys", "File to save newest version of authorized_keys")
+	flag.StringVar(&keysFile, "path", "~/.ssh/authorized_keys", "File to save newest version of authorized_keys")
 	flag.StringVar(&tempFile, "temp", "/tmp/keys.txt", "Temporary save location of downloaded version of authorized_keys")
 	
 	flag.Parse()
@@ -39,18 +39,18 @@ func main () {
 	if bytes.Compare(checksum[:], currentChecksum[:]) == 0 {
 		log.Println("Checksums match, no changes necessary")
 	} else {
-		log.Printf("Changes detected, overriding %s\n", outFile)
+		log.Printf("Changes detected, overriding %s\n", keysFile)
 		input, err := ioutil.ReadFile(tempFile)
 		if err != nil {
 			panic(err)
 		}
 
 		// authorized_keys should have 0644 permissions
-		err = ioutil.WriteFile(outFile, input, 0644)
+		err = ioutil.WriteFile(keysFile, input, 0644)
 		if err != nil {
 			panic(err)
 		}
-		log.Printf("%s overwritten\n", outFile)
+		log.Printf("%s overwritten\n", keysFile)
 	}
 }
 
@@ -78,7 +78,7 @@ func DownloadFile(filepath string, url string) error {
 }
 
 func currentMD5() [16]byte {
-	contents, err := ioutil.ReadFile(outFile)
+	contents, err := ioutil.ReadFile(keysFile)
 	if err != nil {
 		panic(err)
 	}
