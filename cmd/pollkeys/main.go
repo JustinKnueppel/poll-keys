@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 )
 
 var (
@@ -18,6 +19,7 @@ var (
 	remoteUrl   string
 	localTarget string
 	permissions os.FileMode
+	interval    int
 )
 
 func init() {
@@ -26,6 +28,7 @@ func init() {
 	flag.StringVar(&localTarget, "path", "", "Local path of file to synchronize")
 	flag.StringVar(&permissionsString, "perms", "0644", "Permissions for saved file")
 	flag.StringVar(&tempFile, "temp", "/tmp/keys.txt", "Temporary save location of downloaded file")
+	flag.IntVar(&interval, "interval", 0, "Interval to poll remote file. 0 will poll once then exit")
 
 	flag.Parse()
 
@@ -48,9 +51,27 @@ func init() {
 }
 
 func main() {
-	Synchronize(localTarget, remoteUrl)
+	err := Synchronize(localTarget, remoteUrl)
+	if err != nil {
+		log.Printf("Error during synchronization: %v", err)
+	}
+	if interval <= 0 {
+		if err != nil {
+			os.Exit(1)
+		}
+		os.Exit(0)
+	}
+
+	for {
+		err := Synchronize(localTarget, remoteUrl)
+		if err != nil {
+			log.Printf("Error during synchronization: %v", err)
+		}
+		time.Sleep(time.Duration(interval))
+	}
 }
 
+// Synchronize local file with remote
 func Synchronize(path, remote string) error {
 	log.Printf("Polling for changes to %s\n", remote)
 	err := DownloadFile(tempFile, remote)
