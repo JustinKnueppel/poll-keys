@@ -19,16 +19,19 @@ var (
 	remoteUrl   string
 	localTarget string
 	permissions os.FileMode
-	interval    int
+	interval    time.Duration
 )
 
 func init() {
-	var permissionsString string
+	var (
+		permissionsString string
+		intervalString    string
+	)
 	flag.StringVar(&remoteUrl, "remote", "", "Remote url of file to synchronize")
 	flag.StringVar(&localTarget, "path", "", "Local path of file to synchronize")
 	flag.StringVar(&permissionsString, "perms", "0644", "Permissions for saved file")
 	flag.StringVar(&tempFile, "temp", "/tmp/keys.txt", "Temporary save location of downloaded file")
-	flag.IntVar(&interval, "interval", 0, "Interval to poll remote file. 0 will poll once then exit")
+	flag.StringVar(&intervalString, "interval", "0", "Interval to poll remote file. 0 will poll once then exit")
 
 	flag.Parse()
 
@@ -44,10 +47,16 @@ func init() {
 
 	p, err := strconv.ParseUint(permissionsString, 10, 32)
 	if err != nil {
-		fmt.Println("Failed to convert permissions to file mode")
+		fmt.Printf("Failed to convert permissions to file mode %v", err)
 		os.Exit(1)
 	}
 	permissions = os.FileMode(p)
+
+	interval, err = time.ParseDuration(intervalString)
+	if err != nil {
+		fmt.Printf("Failed to parse interval %v", err)
+		os.Exit(1)
+	}
 }
 
 func main() {
@@ -63,11 +72,12 @@ func main() {
 	}
 
 	for {
+		time.Sleep(time.Duration(interval))
+
 		err := Synchronize(localTarget, remoteUrl)
 		if err != nil {
 			log.Printf("Error during synchronization: %v", err)
 		}
-		time.Sleep(time.Duration(interval))
 	}
 }
 
