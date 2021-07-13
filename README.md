@@ -1,3 +1,3 @@
-# Poll Keys
+# Synchronize Remote File
 
-This is a simple utility that keeps a user's `authorized_keys` file synchronized with a remote file.
+This is a simple utility that a local file synchronized with a remote file
