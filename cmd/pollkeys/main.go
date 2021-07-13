@@ -13,24 +13,26 @@ import (
 
 var (
 	tempFile string
-	target string
+	target   string
 	keysFile string
 )
 
-func main () {
+func init() {
 	flag.StringVar(&target, "target", "", "Target file to keep track of")
 	flag.StringVar(&keysFile, "path", "~/.ssh/authorized_keys", "File to save newest version of authorized_keys")
 	flag.StringVar(&tempFile, "temp", "/tmp/keys.txt", "Temporary save location of downloaded version of authorized_keys")
-	
+
 	flag.Parse()
-	
+}
+
+func main() {
 	log.Printf("Polling for changes to %s\n", target)
 	err := DownloadFile(tempFile, target)
 	if err != nil {
 		log.Fatalf("Failed to download %s\n", target)
 	}
 	log.Printf("Successfully downloaded %s\n", target)
-	
+
 	checksum, err := getMD5(tempFile)
 	if err != nil {
 		log.Fatalf("Failed to get checksum of %s\n", tempFile)
@@ -41,20 +43,20 @@ func main () {
 	}
 	if bytes.Compare(checksum[:], keysChecksum[:]) == 0 {
 		log.Println("Checksums match, no changes necessary")
-	} else {
-		log.Printf("Changes detected, overriding %s\n", keysFile)
-		input, err := ioutil.ReadFile(tempFile)
-		if err != nil {
-			panic(err)
-		}
-
-		// authorized_keys should have 0644 permissions
-		err = ioutil.WriteFile(keysFile, input, 0644)
-		if err != nil {
-			panic(err)
-		}
-		log.Printf("%s overwritten\n", keysFile)
+		os.Exit(0)
 	}
+	log.Printf("Changes detected, overriding %s\n", keysFile)
+	input, err := ioutil.ReadFile(tempFile)
+	if err != nil {
+		panic(err)
+	}
+
+	// authorized_keys should have 0644 permissions
+	err = ioutil.WriteFile(keysFile, input, 0644)
+	if err != nil {
+		panic(err)
+	}
+	log.Printf("%s overwritten\n", keysFile)
 }
 
 // DownloadFile will download a url to a local file. It's efficient because it will
