@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -23,6 +24,11 @@ func init() {
 	flag.StringVar(&tempFile, "temp", "/tmp/keys.txt", "Temporary save location of downloaded version of authorized_keys")
 
 	flag.Parse()
+
+	if target == "" {
+		fmt.Println("Target required. Use -target <url> to specify a target")
+		os.Exit(1)
+	}
 }
 
 func main() {
