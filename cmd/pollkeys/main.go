@@ -111,7 +111,6 @@ func Synchronize(path, remote string) error {
 		return err
 	}
 
-	// authorized_keys should have 0644 permissions
 	err = ioutil.WriteFile(path, input, permissions)
 	if err != nil {
 		return err
