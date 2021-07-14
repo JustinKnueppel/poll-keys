@@ -30,7 +30,7 @@ func init() {
 	flag.StringVar(&remoteUrl, "remote", "", "Remote url of file to synchronize")
 	flag.StringVar(&localTarget, "path", "", "Local path of file to synchronize")
 	flag.StringVar(&permissionsString, "perms", "0644", "Permissions for saved file")
-	flag.StringVar(&tempFile, "temp", "/tmp/keys.txt", "Temporary save location of downloaded file")
+	flag.StringVar(&tempFile, "temp", "/tmp/sync_file.txt", "Temporary save location of downloaded file")
 	flag.StringVar(&intervalString, "interval", "0", "Interval to poll remote file. 0 will poll once then exit")
 
 	flag.Parse()
