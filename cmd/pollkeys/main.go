@@ -91,6 +91,21 @@ func Synchronize(path, remote string) error {
 	}
 	log.Printf("Successfully downloaded %s\n", remote)
 
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		log.Printf("%s does not exist, using %s", path, remote)
+		input, err := ioutil.ReadFile(tempFile)
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(path, input, permissions)
+		if err != nil {
+			return err
+		}
+		log.Printf("%s written\n", path)
+		return nil
+	}
+
 	checksum, err := getMD5(tempFile)
 	if err != nil {
 		log.Printf("Failed to get checksum of %s\n", tempFile)
@@ -105,7 +120,7 @@ func Synchronize(path, remote string) error {
 		log.Println("Checksums match, no changes necessary")
 		return nil
 	}
-	log.Printf("Changes detected, overriding %s\n", path)
+	log.Printf("Changes detected, overwriting %s\n", path)
 	input, err := ioutil.ReadFile(tempFile)
 	if err != nil {
 		return err
