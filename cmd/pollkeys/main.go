@@ -45,7 +45,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	p, err := strconv.ParseUint(permissionsString, 10, 32)
+	p, err := strconv.ParseUint(permissionsString, 8, 32)
 	if err != nil {
 		fmt.Printf("Failed to convert permissions to file mode %v", err)
 		os.Exit(1)
